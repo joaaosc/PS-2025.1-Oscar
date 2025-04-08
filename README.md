@@ -5,14 +5,6 @@
 
 
 
-<div align="center">
-    <a href="https://www.python.org/downloads/release/python-3110/"><img src="https://img.shields.io/badge/Python-3.11-blue.svg" alt="Python 3.11"></a>
-    <a href="https://core.telegram.org/bots"><img src="https://img.shields.io/badge/Telegram%20Bot-%2300A5E.svg?style=flat&logo=telegram&logoColor=blue" alt="Telegram Bot"></a> 
-    <a href="https://restfulapi.net/"><img src="https://img.shields.io/badge/REST%20API-%2300A5E.svg?style=flat&logo=api&logoColor=white" alt="REST API"></a> 
-</div>
-
-
-
 ## Aqui vai uma breve descrição de cada coluna, considerando que “1” se refere ao time da casa e “2” ao time visitante:
 
 - **Chutes a gol 1 / Chutes a gol 2**  
