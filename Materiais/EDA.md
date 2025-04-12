@@ -12,7 +12,7 @@ Para fazer esse tipo de análise, podemos utilizar diversas técnicas, algumas e
 ## Ferramentas
 Há uma infinidade de ferramentas que podem ser utilizadas nesse processo, mas aqui, vamos introduzir um pouco da linguagem python, que é bastante simples de ser usada e muito popular também (e portanto, há bastante material disponível online!).
 
-As principais bibliotecas da linguagem que vamos abordar aqui são o `pandas` e o `matplotlib`. Encorajamos vocês a usarem o [jupyter notebook](TODO: Link) ou o [google colab][TODO: Link] para desenvolver os códigos, por facilitar a organização e visualização dos resultados.
+As principais bibliotecas da linguagem que vamos abordar aqui são o `pandas` e o `matplotlib`. Encorajamos vocês a usarem o [jupyter notebook](https://jupyter.org/) ou o [google colab](https://colab.google.com/) para desenvolver os códigos, por facilitar a organização e visualização dos resultados.
 
 ### pandas
 
