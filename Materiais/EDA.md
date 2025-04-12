@@ -68,6 +68,5 @@ O pandas possui algumas funções que mostram uma versão resumida do seu datafr
 `df['x'].quantile([.25, .5, .75])` retorna uma tabela contendo as estatísticas de quantil da coluna *x*, especificamente 50%, 25% e 75%.
 
 #### Filtrando dados
-TODO
-
+🚧 Trabalhando nisso. Em breve 🚧
 ## [Material complementar](http://ibm.com/think/topics/exploratory-data-analysis)
