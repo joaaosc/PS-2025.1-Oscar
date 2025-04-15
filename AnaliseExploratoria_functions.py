@@ -50,14 +50,20 @@ def substituir_tiros_por_chutes(df):
     return df_copy
 
 from typing import Tuple
-def plot_histogram_and_stats(df: pd.DataFrame, column: str, interactive=True) -> Tuple[int, int, float, float, float, float, float, float, float, float, float]:
+def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, interactive: bool = True)\
+        -> Tuple[int, int, float, float, float, float, float, float, float, float, float]:
     """
-    Plota um histograma para a coluna especificada de um DataFrame e retorna e printa estatísticas descritivas.
+    Plota (opcionalmente) um histograma para a coluna especificada de um DataFrame e retorna e printa estatísticas descritivas.
 
     :param df: O DataFrame que contém os dados.
     :type df: pd.DataFrame
     :param column: O nome da coluna para a qual será gerado o histograma.
     :type column: str
+    :param plot: Se True, gera o gráfico. Se False, apenas retorna as estatísticas.
+    :type plot: bool
+    :param interactive: Se True, o plot é feito pelo plotly (interativo. Se False, pelo matplotib.
+    :type interactive: bool
+
 
     :return: Uma tupla contendo:
         - num_nan (int): Número de valores NaN
@@ -95,45 +101,45 @@ def plot_histogram_and_stats(df: pd.DataFrame, column: str, interactive=True) ->
     percentil_75 = data_sem_nan.quantile(0.75)
     percentil_95 = data_sem_nan.quantile(0.95)
 
-    # Plot do histograma
-    if interactive == False:
-        plt.figure(figsize=(6, 4))
-        plt.hist(data_sem_nan, bins='auto', edgecolor='black', histtype='stepfilled')
-        plt.title(f'{column}')
-        plt.xlabel(column)
-        plt.ylabel('Ocorrências')
-        plt.grid(False)
-        plt.axvline(media, linewidth=1, label='Média')
-        plt.axvline(percentil_50, linewidth=1, label='Mediana')
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
-    else:
-        fig = px.histogram(
-            x=data_sem_nan,
-            #nbins='auto',
-            title=f'{column}',
-            labels={"x": column, "y": "Ocorrências"}
-        )
+    if plot == True:
+        if not interactive:
+            plt.figure(figsize=(6, 4))
+            plt.hist(data_sem_nan, bins='auto', edgecolor='black', histtype='stepfilled')
+            plt.title(f'{column}')
+            plt.xlabel(column)
+            plt.ylabel('Ocorrências')
+            plt.grid(False)
+            plt.axvline(media, linewidth=1, label='Média')
+            plt.axvline(percentil_50, linewidth=1, label='Mediana')
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+        else:
+            fig = px.histogram(
+                x=data_sem_nan,
+                #nbins='auto',
+                title=f'{column}',
+                labels={"x": column, "y": "Ocorrências"}
+            )
 
-        # Adiciona linhas verticais para a média e a mediana
-        fig.add_vline(
-            x=media,
-            line_width=1,
-            line_dash="dash",
-            line_color="red",
-            annotation_text="Média",
-            annotation_position="top right"
-        )
-        fig.add_vline(
-            x=percentil_50,
-            line_width=1,
-            line_dash="dash",
-            line_color="green",
-            annotation_text="Mediana",
-            annotation_position="top right"
-        )
-        fig.show()
+            # Adiciona linhas verticais para a média e a mediana
+            fig.add_vline(
+                x=media,
+                line_width=1,
+                line_dash="dash",
+                line_color="red",
+                annotation_text="Média",
+                annotation_position="top right"
+            )
+            fig.add_vline(
+                x=percentil_50,
+                line_width=1,
+                line_dash="dash",
+                line_color="green",
+                annotation_text="Mediana",
+                annotation_position="top right"
+            )
+            fig.show()
 
     print(
         f"NaN's: {num_nan} | Ocorrências: {num_valid} | Média: {media:.2f} | "
@@ -142,6 +148,5 @@ def plot_histogram_and_stats(df: pd.DataFrame, column: str, interactive=True) ->
         f"50º percentil (mediana): {percentil_50:.2f} | 75º percentil: {percentil_75:.2f} | "
         f"95º percentil: {percentil_95:.2f}")
 
-# Retorna as estatísticas em uma tupla
     return (int(num_nan),int(num_valid),float(media),float(desvio),int(minimo),int(maximo),float(percentil_5),float(percentil_25),float(percentil_50),float(percentil_75),float(percentil_95))
 
