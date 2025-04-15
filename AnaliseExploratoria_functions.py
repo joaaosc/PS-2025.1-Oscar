@@ -142,11 +142,11 @@ def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, intera
             fig.show()
 
     print(
-        f"NaN's: {num_nan} | Ocorrências: {num_valid} | Média: {media:.2f} | "
-        f"Desv. padrão: {desvio:.2f} | Mínimo: {minimo:.2f} | Máximo: {maximo:.2f} | "
-        f"5º percentil: {percentil_5:.2f} | 25º percentil: {percentil_25:.2f} | "
-        f"50º percentil (mediana): {percentil_50:.2f} | 75º percentil: {percentil_75:.2f} | "
-        f"95º percentil: {percentil_95:.2f}")
+        f"\033[1mNaN's:\033[0m {num_nan} --|-- \033[1mOcorrências:\033[0m {num_valid} --|-- \033[1mMédia:\033[0m {media:.2f} --|-- "
+        f"\033[1mDesv. padrão:\033[0m {desvio:.2f} --|-- \033[1mMínimo:\033[0m {minimo:.2f} --|-- \033[1mMáximo:\033[0m {maximo:.2f} --|-- "
+        f"\033[1m5º percentil:\033[0m {percentil_5:.2f} --|-- \033[1m25º percentil:\033[0m {percentil_25:.2f} --|-- "
+        f"\033[1m50º percentil (mediana):\033[0m {percentil_50:.2f} --|-- \033[1m75º percentil:\033[0m {percentil_75:.2f} --|-- "
+        f"\033[1m95º percentil:\033[0m {percentil_95:.2f}\n--------------")
 
     return (int(num_nan),int(num_valid),float(media),float(desvio),int(minimo),int(maximo),float(percentil_5),float(percentil_25),float(percentil_50),float(percentil_75),float(percentil_95))
 
