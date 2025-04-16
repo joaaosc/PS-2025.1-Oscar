@@ -1,6 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
+import seaborn as sns
+from scipy.stats import probplot
+from sklearn.impute import SimpleImputer, KNNImputer
 
 def calcular_resultado(df):
     """
@@ -50,7 +53,7 @@ def substituir_tiros_por_chutes(df):
     return df_copy
 
 from typing import Tuple
-def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, interactive: bool = True)\
+def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, interactive: bool = True, bins: int = 40)\
         -> Tuple[int, int, float, float, float, float, float, float, float, float, float]:
     """
     Plota (opcionalmente) um histograma para a coluna especificada de um DataFrame e retorna e printa estatísticas descritivas.
@@ -63,6 +66,8 @@ def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, intera
     :type plot: bool
     :param interactive: Se True, o plot é feito pelo plotly (interativo. Se False, pelo matplotib.
     :type interactive: bool
+    :param bins: Ajuste para o gráfico do histograma alinhar corretamente.
+    :type bins: int
 
 
     :return: Uma tupla contendo:
@@ -80,7 +85,7 @@ def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, intera
     :rtype: Tuple[int, int, float, float, float, float, float, float, float, float, float]
 
     Exemplo de uso:
-        >>> stats = plot_histogram_and_stats(df, 'Chutes a gol 1')
+        >>> stats = histogram_and_stats(df, 'Chutes a gol 1')
         >>> print("Estatísticas:", stats)
     """
 
@@ -104,7 +109,7 @@ def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, intera
     if plot == True:
         if not interactive:
             plt.figure(figsize=(6, 4))
-            plt.hist(data_sem_nan, bins='auto', edgecolor='black', histtype='stepfilled')
+            plt.hist(data_sem_nan, bins=bins, edgecolor='black', histtype='stepfilled')
             plt.title(f'{column}')
             plt.xlabel(column)
             plt.ylabel('Ocorrências')
@@ -150,3 +155,106 @@ def histogram_and_stats(df: pd.DataFrame, column: str, plot: bool = True, intera
 
     return (int(num_nan),int(num_valid),float(media),float(desvio),int(minimo),int(maximo),float(percentil_5),float(percentil_25),float(percentil_50),float(percentil_75),float(percentil_95))
 
+
+def evaluate_distribution(df: pd.DataFrame, column: str, show_boxplot: bool = False,bins: int = 40) -> dict:
+    """
+    Avalia a distribuição de uma coluna do DataFrame calculando skewness e
+    (excesso de) kurtosis e gerando gráficos para visualização: histograma com KDE,
+    Q-Q plot e opcionalmente um boxplot.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame contendo os dados.
+        column (str): Nome da coluna a ser avaliada.
+        show_boxplot (bool, optional): Se True, inclui o boxplot na visualização.
+                                       Padrão é False.
+        bins (int, optional): Número de intervalos no histograma. O default é 40, mas pode ser alterado para
+                    uma melhor visualização
+
+    Returns:
+        dict: Dicionário com os seguintes valores:
+            - "skewness": Valor da assimetria da distribuição.
+            - "kurtosis": Valor do excesso de kurtosis (kurtosis - 3).
+    """
+    # Remove os NaN para os cálculos e plots
+    dados = df[column].dropna()
+
+    skewness_value = dados.skew()
+    kurtosis_value = dados.kurt()
+
+    plt.figure(figsize=(18, 5))
+
+    plt.subplot(1, 3, 1)
+    sns.histplot(dados, kde=True,bins=bins)
+    plt.title(f'Histograma de {column}\nSkew: {skewness_value:.2f} | Kurtosis (excesso): {kurtosis_value:.2f}')
+
+    # Q-Q Plot
+    plt.subplot(1, 3, 2)
+    probplot(dados, dist="norm", plot=plt)
+    plt.title(f'Q-Q Plot de {column}')
+
+    plt.subplot(1, 3, 3)
+    if show_boxplot:
+        sns.boxplot(x=dados)
+        plt.title(f'Boxplot de {column}')
+    else:
+        plt.axis('off')
+
+    plt.show()
+
+    print(f"\nColuna: {column}")
+    print(f"Skewness: {skewness_value:.3f}")
+    print(f"Kurtosis (excesso): {kurtosis_value:.3f}")
+    return {
+        "skewness": skewness_value,
+        "kurtosis": kurtosis_value
+    }
+
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer, KNNImputer
+
+def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str = "median",
+                          n_neighbors: int = 5) -> pd.DataFrame:
+    """
+    Imputa os valores faltantes (NaN) nas colunas especificadas do DataFrame utilizando
+    a estratégia definida. As opções de estratégia são:
+
+    - "mean": substitui os NaN pela média dos valores.
+    - "median": substitui os NaN pela mediana dos valores.
+    - "knn": utiliza o KNN Imputer para imputar os NaN considerando os vizinhos mais próximos.
+
+    Parâmetros:
+        df (pd.DataFrame): DataFrame contendo os dados.
+        columns (list or str): Lista de nomes das colunas onde os valores faltantes serão imputados,
+                               ou uma string para uma única coluna.
+        strategy (str, opcional): Estratégia de imputação ("mean", "median" ou "knn").
+                                  Padrão é "median".
+        n_neighbors (int, opcional): Número de vizinhos a serem considerados no KNN Imputer
+                                     (apenas se strategy for "knn"). Padrão é 5.
+
+    Retorna:
+        pd.DataFrame: DataFrame atualizado com os valores faltantes imputados.
+
+    Raises:
+        ValueError: Se a estratégia fornecida não for "mean", "median" ou "knn".
+    """
+    if strategy not in ["mean", "median", "knn"]:
+        raise ValueError("A estratégia deve ser 'mean', 'median' ou 'knn'.")
+
+    # Se 'columns' for uma string, converte para lista
+    if isinstance(columns, str):
+        columns = [columns]
+
+    # Usamos .loc para evitar o SettingWithCopyWarning
+    if strategy in ["mean", "median"]:
+        imputer = SimpleImputer(strategy=strategy)
+        df.loc[:, columns] = imputer.fit_transform(df.loc[:, columns])
+    elif strategy == "knn":
+        imputer = KNNImputer(n_neighbors=n_neighbors)
+        df.loc[:, columns] = imputer.fit_transform(df.loc[:, columns])
+
+    return df
+
+# Exemplo de uso:
+# df = impute_missing_values(df, 'Posse 1(%)', strategy='mean')
+# df = impute_missing_values(df, 'Posse 2(%)', strategy='mean')
