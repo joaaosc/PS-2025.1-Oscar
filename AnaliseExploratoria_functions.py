@@ -213,24 +213,20 @@ import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer, KNNImputer
 
-def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str = "median",
-                          n_neighbors: int = 5) -> pd.DataFrame:
+def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str = "median") -> pd.DataFrame:
     """
     Imputa os valores faltantes (NaN) nas colunas especificadas do DataFrame utilizando
     a estratégia definida. As opções de estratégia são:
 
     - "mean": substitui os NaN pela média dos valores.
     - "median": substitui os NaN pela mediana dos valores.
-    - "knn": utiliza o KNN Imputer para imputar os NaN considerando os vizinhos mais próximos.
 
     Parâmetros:
         df (pd.DataFrame): DataFrame contendo os dados.
         columns (list or str): Lista de nomes das colunas onde os valores faltantes serão imputados,
                                ou uma string para uma única coluna.
-        strategy (str, opcional): Estratégia de imputação ("mean", "median" ou "knn").
+        strategy (str, opcional): Estratégia de imputação ("mean" ou "median").
                                   Padrão é "median".
-        n_neighbors (int, opcional): Número de vizinhos a serem considerados no KNN Imputer
-                                     (apenas se strategy for "knn"). Padrão é 5.
 
     Retorna:
         pd.DataFrame: DataFrame atualizado com os valores faltantes imputados.
@@ -238,8 +234,8 @@ def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str 
     Raises:
         ValueError: Se a estratégia fornecida não for "mean", "median" ou "knn".
     """
-    if strategy not in ["mean", "median", "knn"]:
-        raise ValueError("A estratégia deve ser 'mean', 'median' ou 'knn'.")
+    if strategy not in ["mean", "median"]:
+        raise ValueError("A estratégia deve ser 'mean' ou 'median'.")
 
     # Se 'columns' for uma string, converte para lista
     if isinstance(columns, str):
@@ -249,12 +245,102 @@ def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str 
     if strategy in ["mean", "median"]:
         imputer = SimpleImputer(strategy=strategy)
         df.loc[:, columns] = imputer.fit_transform(df.loc[:, columns])
-    elif strategy == "knn":
-        imputer = KNNImputer(n_neighbors=n_neighbors)
-        df.loc[:, columns] = imputer.fit_transform(df.loc[:, columns])
+
+    return df
+
+from sklearn.preprocessing import StandardScaler
+from typing import Union, List
+def standardize_and_knn_impute(
+        df: pd.DataFrame,
+        columns: Union[List[str], str],
+        n_neighbors: int = 5
+) -> pd.DataFrame:
+    """
+    Padroniza (z‑score) as colunas especificadas e, em seguida, imputa os valores faltantes
+    usando KNN Imputer sobre os dados padronizados.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame contendo as colunas a serem processadas.
+        columns (list[str] | str): Nome ou lista de nomes das colunas a padronizar e imputar.
+        n_neighbors (int, optional): Número de vizinhos a considerar no KNNImputer.
+                                     Padrão é 5.
+
+    Returns:
+        pd.DataFrame: O mesmo DataFrame, com as colunas informadas substituídas pelos valores
+                      padronizados e imputados.
+    """
+    # garante lista de colunas
+    if isinstance(columns, str):
+        columns = [columns]
+
+    # cópia para evitar SettingWithCopyWarning
+    df = df.copy()
+
+    # 1) padroniza
+    scaler = StandardScaler()
+    scaled_vals = scaler.fit_transform(df.loc[:, columns])
+
+    # 2) imputa com KNN sobre os valores padronizados
+    imputer = KNNImputer(n_neighbors=n_neighbors)
+    imputed_vals = imputer.fit_transform(scaled_vals)
+
+    # 3) atribui de volta ao DataFrame
+    df.loc[:, columns] = imputed_vals
+
+    return df
+
+def create_offensive_indicators(
+        df: pd.DataFrame,
+        cols_team1: list[str],
+        cols_team2: list[str],
+        weights: tuple[float] = (2, 1, 1)
+) -> pd.DataFrame:
+    """
+    Cria indicadores ofensivos para mandante (team1) e visitante (team2) a partir de colunas tratadas.
+
+    Cada indicador é uma média ponderada das três métricas fornecidas, usando pesos
+    que refletem a importância relativa de cada ação (por padrão, chute a gol = 2,
+    escanteio = 1, chute fora = 1). As colunas devem estar padronizadas (z‑scores)
+    e sem valores faltantes antes da chamada desta função.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame contendo as colunas já padronizadas e imputadas.
+        cols_team1 (list[str]): Lista de três nomes de colunas para o time mandante,
+                                na ordem [chutes_a_gol, escanteios, chutes_fora].
+        cols_team2 (list[str]): Lista de três nomes de colunas para o time visitante,
+                                na ordem [chutes_a_gol, escanteios, chutes_fora].
+        weights (list[float], optional): Pesos para cada métrica, na mesma ordem das colunas.
+                                         Padrão é [2, 1, 1].
+
+    Returns:
+        pd.DataFrame: Cópia do DataFrame original contendo duas novas colunas:
+                      - 'Indicador_Ofensivo_1'
+                      - 'Indicador_Ofensivo_2'
+    """
+    # Cópia para não modificar o original
+    df = df.copy()
+
+    # Garantir que temos três pesos
+    if len(weights) != 3:
+        raise ValueError("A lista de pesos deve ter exatamente três elementos.")
+
+    w = np.array(weights)
+    den = w.sum()
+
+    # Cálculo do indicador para o mandante
+    vals1 = df[cols_team1].to_numpy()
+    df.loc[:, 'Indicador_Ofensivo_1'] = (vals1 * w).sum(axis=1) / den
+
+    # Cálculo do indicador para o visitante
+    vals2 = df[cols_team2].to_numpy()
+    df.loc[:, 'Indicador_Ofensivo_2'] = (vals2 * w).sum(axis=1) / den
 
     return df
 
 # Exemplo de uso:
-# df = impute_missing_values(df, 'Posse 1(%)', strategy='mean')
-# df = impute_missing_values(df, 'Posse 2(%)', strategy='mean')
+# df = create_offensive_indicators(
+#     df,
+#     cols_team1=['Chutes a gol 1','Escanteios 1','Chutes fora 1'],
+#     cols_team2=['Chutes a gol 2','Escanteios 2','Chutes fora 2']
+# )
+# df[['Indicador_Ofensivo_1','Indicador_Ofensivo_2']].head()
