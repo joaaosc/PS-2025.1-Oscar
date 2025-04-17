@@ -166,7 +166,7 @@ def evaluate_distribution(df: pd.DataFrame, column: str, show_boxplot: bool = Fa
         df (pd.DataFrame): DataFrame contendo os dados.
         column (str): Nome da coluna a ser avaliada.
         show_boxplot (bool, optional): Se True, inclui o boxplot na visualização.
-                                       Padrão é False.
+                                    Padrão é False.
         bins (int, optional): Número de intervalos no histograma. O default é 40, mas pode ser alterado para
                     uma melhor visualização
 
@@ -224,9 +224,9 @@ def impute_missing_values(df: pd.DataFrame, columns: list or str, strategy: str 
     Parâmetros:
         df (pd.DataFrame): DataFrame contendo os dados.
         columns (list or str): Lista de nomes das colunas onde os valores faltantes serão imputados,
-                               ou uma string para uma única coluna.
+                            ou uma string para uma única coluna.
         strategy (str, opcional): Estratégia de imputação ("mean" ou "median").
-                                  Padrão é "median".
+                                Padrão é "median".
 
     Retorna:
         pd.DataFrame: DataFrame atualizado com os valores faltantes imputados.
@@ -263,11 +263,11 @@ def standardize_and_knn_impute(
         df (pd.DataFrame): DataFrame contendo as colunas a serem processadas.
         columns (list[str] | str): Nome ou lista de nomes das colunas a padronizar e imputar.
         n_neighbors (int, optional): Número de vizinhos a considerar no KNNImputer.
-                                     Padrão é 5.
+                                    Padrão é 5.
 
     Returns:
         pd.DataFrame: O mesmo DataFrame, com as colunas informadas substituídas pelos valores
-                      padronizados e imputados.
+                    padronizados e imputados.
     """
     # garante lista de colunas
     if isinstance(columns, str):
@@ -310,12 +310,12 @@ def create_offensive_indicators(
         cols_team2 (list[str]): Lista de três nomes de colunas para o time visitante,
                                 na ordem [chutes_a_gol, escanteios, chutes_fora].
         weights (list[float], optional): Pesos para cada métrica, na mesma ordem das colunas.
-                                         Padrão é [2, 1, 1].
+                                        Padrão é [2, 1, 1].
 
     Returns:
         pd.DataFrame: Cópia do DataFrame original contendo duas novas colunas:
-                      - 'Indicador_Ofensivo_1'
-                      - 'Indicador_Ofensivo_2'
+                    - 'Indicador_Ofensivo_1'
+                    - 'Indicador_Ofensivo_2'
     """
     # Cópia para não modificar o original
     df = df.copy()
