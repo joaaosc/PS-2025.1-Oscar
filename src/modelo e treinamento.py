@@ -1,4 +1,4 @@
-# ensemble_model.py
+
 
 import pandas as pd
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -67,21 +67,17 @@ def build_ensemble(xgb_model, mlp_model):
     ], voting='soft')
     return ensemble
 
-
-# ========================
-#   Função principal
-# ========================
-
-def main():
-    # === Carregue o dataset ===
-    df = pd.read_csv("seu_arquivo.csv")  # <- altere aqui
+def split(file_path):
+    df = pd.read_csv("file_path") 
     X = df.drop("target", axis=1)
     y = df["target"]
 
-    # === Divisão treino/teste ===
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+    X, y, test_size=0.2, random_state=42)
 
+    return X_train, X_test, y_train, y_test
+
+def ensemble_train(X_train, y_train):
     # === Modelos individuais ===
     print("Treinando XGBoost...")
     xgb_model = get_xgboost_model(X_train, y_train)
@@ -94,8 +90,14 @@ def main():
     ensemble = build_ensemble(xgb_model, mlp_model)
     ensemble.fit(X_train, y_train)
 
-    # === Avaliação ===
-    y_pred = ensemble.predict(X_test)
+    return ensemble
+
+def ensemble_test(ensemble_model, X_test):
+    y_pred = ensemble_model.predict(X_test)
+
+    return y_pred
+
+def ensemble_evaluate(y_test, y_pred):
     print("\n==== Avaliação ====")
     print("Accuracy:", accuracy_score(y_test, y_pred))
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
@@ -103,5 +105,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
 
+    pass
