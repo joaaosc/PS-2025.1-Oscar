@@ -207,5 +207,32 @@ def ensemble_evaluate(y_test: Union[pd.Series, np.ndarray],
 
 
 if __name__ == "__main__":
+# Import a ser utilizado nos notebooks:
+#    from model_utils import (
+#    split,
+#   ensemble_train,
+#    ensemble_test,
+#    ensemble_evaluate
+#)
 
-    pass
+
+
+    
+    file_path = "caminho para o dataset.csv"  # Altere para o caminho real do seu dataset
+
+    
+    print("Splitando dados...")
+    X_train, X_test, y_train, y_test = split(file_path, target_column="target")
+
+    # === Treinamento do Ensemble ===
+    print("\nTreinamento o ensemble...")
+    ensemble_model = ensemble_train(X_train, y_train)
+
+    # === Teste ===
+    print("\nTestando o ensemble...")
+    y_pred = ensemble_test(ensemble_model, X_test)
+
+    # === Avaliação ===
+    print("\nAvaliação do modelo:")
+    metrics = ensemble_evaluate(y_test, y_pred)
+
